@@ -9,6 +9,7 @@ import torch
 from torch import distributions
 
 from cs285.infrastructure import pytorch_util as ptu
+from cs285.infrastructure import utils as utils
 from cs285.policies.base_policy import BasePolicy
 
 
@@ -91,7 +92,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         else:
             observation = obs[None]
 
-        action_distribution = self.forward(observation)
+        action_distribution = self.forward(ptu.from_numpy(observation))
         return action_distribution.sample()
 
     # update/train this policy
@@ -106,7 +107,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     def forward(self, observation: torch.FloatTensor) -> torch.distributions.Distribution:
         if self.discrete:
             logits = self.logits_na(observation)
-            action_distribution = torch.distributions.Categorical(logits)
+            action_distribution = torch.distributions.Categorical(logits=logits)
         else:
             loc = self.mean_net(observation)
             scale = self.logstd
@@ -148,7 +149,7 @@ class MLPPolicyPG(MLPPolicy):
         if self.nn_baseline:
             ## TODO: normalize the q_values to have a mean of zero and a standard deviation of one
             ## HINT: there is a `normalize` function in `infrastructure.utils`
-            targets = utils.normalize(q_values, 0, 1)
+            targets = utils.normalize(q_values, np.mean(q_values), np.std(q_values))
             targets = ptu.from_numpy(targets)
 
             ## TODO: use the `forward` method of `self.baseline` to get baseline predictions

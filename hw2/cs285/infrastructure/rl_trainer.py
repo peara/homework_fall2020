@@ -150,7 +150,7 @@ class RL_Trainer(object):
     ####################################
 
     def collect_training_trajectories(self, itr, load_initial_expertdata, collect_policy, batch_size):
-        if load_initial_expertdata == None:
+        if load_initial_expertdata != None:
             return load_initial_expertdata, 0, None
 
         print("\nCollecting data for training...")
